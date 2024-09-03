@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page</title>
+    <style>
+        .product {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+        }
+        .cart-summary {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Our Products</h1>
+
+    <div class="product" id="div1">
+        <h2>Product 1</h2>
+        <p>Price: $10.00</p>
+        <button onclick="addToCart('Product 1', 1000)">Add to Cart</button>
+    </div>
+    <div class="product" id="div2">
+        <h2>Product 2</h2>
+        <p>Price: $20.00</p>
+        <button onclick="addToCart('Product 2', 2000)">Add to Cart</button>
+    </div>
+    <div class="product" id="div3">
+        <h2>Product 3</h2>
+        <p>Price: $30.00</p>
+        <button onclick="addToCart('Product 3', 3000)">Add to Cart</button>
+    </div>
+    <div class="product" id="div4">
+        <h2>Product 4</h2>
+        <p>Price: $40.00</p>
+        <button onclick="addToCart('Product 4', 4000)">Add to Cart</button>
+    </div>
+
+    <div class="cart-summary">
+        <h3>Shopping Cart</h3>
+        <div>Total: $<span id="cart-total">0.00</span></div>
+        <button onclick="viewCart()">View Cart</button>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function addToCart(productName, productPrice) {
+            const existingProductIndex = cart.findIndex(item => item.name === productName);
+            if (existingProductIndex > -1) {
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                cart.push({ name: productName, price: productPrice, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartTotal();
+        }
+
+        function updateCartTotal() {
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('cart-total').textContent = (total / 100).toFixed(2);
+        }
+
+        function viewCart() {
+            window.location.href = 'cart.html';
+        }
+
+        // Update cart total on page load
+        updateCartTotal();
+    </script>
+</body>
+</html>
