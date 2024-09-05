@@ -66,7 +66,7 @@
                     errorElement.textContent = result.error.message;
                 } else {
                     // 将付款信息发送到服务器端进行处理
-                    fetch('/create-checkout-session', {
+                    fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
