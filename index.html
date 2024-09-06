@@ -12,7 +12,7 @@
             padding: 0;
             display: block;
             height: 200vh;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
         }
 
         iframe{
@@ -62,15 +62,16 @@
         align-items: center; /* 菜单项水平居中 */
         justify-content: flex-start; /* 菜单项靠上对齐 */
         opacity: 0;
+        pointer-events: none;
         overflow: hidden;
         background-color: #ffffff;
         position: absolute;
-        top: 32px;
+        top: 42px;
         width: 100vw;
         height: 100vh;
         max-width: 600px;
         transition: opacity 0.25s ease;
-        padding: 20px 0; /* 给菜单顶部和底部一点空间 */
+        padding: 0px 0; /* 给菜单顶部和底部一点空间 */
     }
     .menu-item {
         display: flex;
@@ -88,7 +89,7 @@
         align-items: center; /* 垂直居中 */
         width: 100%; /* 让菜单项占满父容器的宽度 */
         border: 0px solid #ddd;
-        height: 130px; /* 固定高度，确保居中效果 */
+        height: 40px; /* 固定高度，确保居中效果 */
         margin-bottom: -1px; /* 菜单项之间的间距 */
         margin-left:0px;
         margin-right:0;
@@ -112,6 +113,7 @@
 /* 在菜单展开时的样式 */
 .menu.show {/* 这里设置一个大于菜单内容实际高度的值 */
     opacity: 1;
+    pointer-events: all;
 }
 
     </style>
@@ -128,7 +130,10 @@
         <li class="menu-item"><h2>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br> </h2></li>
         <li class="menu-item"><h2>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br></h2></li>
         <li class="menu-item"><h2>ACCESSORIES ACCESSORIES ACCESSORIES<br>ACCESSORIES ACCESSORIES ACCESSORIES<br>ACCESSORIES ACCESSORIES ACCESSORIES</h2></li>
+        <li class="menu-item2"><h2></h2></li>
         <li class="menu-item2"><h2>About</h2></li>
+        <li class="menu-item2"><h2>Contact</h2></li>
+        <li class="menu-item2"><h2>Tracking</h2></li>
         </ul>
 
         <!-- Logo -->
@@ -138,7 +143,7 @@
 
     </div>
 
-    <iframe src="wears.html" style="width:100%; height:100%; margin-top: 100px;"></iframe>
+    <iframe src="wears.html" style="width:100%; height:100%; margin-top: 42px;"></iframe>
 
     <script>
         // JavaScript 控制菜单展开和收起

@@ -5,47 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Page</title>
     <style>
+        body{
+            font-family: helvetica;
+            display: flex;
+            flex-direction: column; /* 让菜单项从上到下排列 */
+            align-items: center;
+        }
+
+        .hero{
+            border: 1px solid #000000;
+            width:200px;
+            height:100px;
+            display: flex;
+            flex-direction: column; /* 让菜单项从上到下排列 */
+            align-items: center;
+            justify-content: center;
+            margin-top: 150px;
+            margin-bottom: 150px;
+
+        }
+        h1{
+            font-size:15px;
+            
+        }
+
+        h2{
+            font-size:13px;
+        }
+
+        p{
+            font-size:12px;
+        }
+
+        .productBack{
+            display:flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+
+        }
         .product {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 10px;
+            border: 0px solid #ddd;
+            padding: px;
+            margin: px;
             display: inline-block;
             width: 200px;
+            height:280px;
             text-align: center;
         }
         .cart-summary {
-            position: fixed;
             top: 10px;
             right: 10px;
             background-color: #f4f4f4;
             padding: 10px;
             border: 1px solid #ddd;
+            margin-top:200px
         }
     </style>
 </head>
 <body>
-    <h1>Our Products</h1>
-
+    <div class="hero">
+        <p>WEARS WEARS WEARS<br>WEARS WEARS WEARS</p>
+    </div>
+    
+<div class="productBack">
     <div class="product" id="div1">
-        <h2>Product 1</h2>
-        <p>Price: $10.00</p>
+        <img src="product/wears/1.jpeg" style="width:80%; height:auto;">
+        <h2>Not Be@rBrick x BUFFET</h2>
+        <p>$ 170.00</p>
         <button onclick="addToCart('Product 1', 100)">Add to Cart</button>
     </div>
     <div class="product" id="div2">
-        <h2>Product 2</h2>
-        <p>Price: $20.00</p>
+        <img src="product/wears/2.jpeg" style="width:80%; height:auto;">
+        <h2>BUFFET x CROCS</h2>
+        <p>$ 299.00</p>
         <button onclick="addToCart('Product 2', 2000)">Add to Cart</button>
     </div>
     <div class="product" id="div3">
-        <h2>Product 3</h2>
-        <p>Price: $30.00</p>
+        <img src="product/wears/3.jpeg" style="width:80%; height:auto;">
+        <h2>BUFFET Catlog 2024</h2>
+        <p>$ 199.00</p>
         <button onclick="addToCart('Product 3', 3000)">Add to Cart</button>
     </div>
     <div class="product" id="div4">
-        <h2>Product 4</h2>
-        <p>Price: $40.00</p>
+        <img src="product/wears/4.jpeg" style="width:80%; height:auto;">
+        <h2>BUFFET T-Shirt</h2>
+        <p>$ 59.00</p>
         <button onclick="addToCart('Product 4', 4000)">Add to Cart</button>
     </div>
+</div>
 
     <div class="cart-summary">
         <h3>Shopping Cart</h3>
