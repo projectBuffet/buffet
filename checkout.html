@@ -100,6 +100,10 @@
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
+            // 获取购物车总金额
+            const totalAmount = localStorage.getItem('totalAmount');
+            console.log('Total amount: ', totalAmount);
+
             stripe.createPaymentMethod({
                 type: 'card',
                 card: card,
@@ -128,7 +132,7 @@
                         },
                         body: JSON.stringify({
                             payment_method_id: result.paymentMethod.id,
-                            amount: localStorage.getItem('totalAmount') // 将总金额从购物车传递过来
+                            amount: totalAmount  // 使用存储的总金额
                         }),
                     }).then(function(response) {
                         return response.json();

@@ -61,7 +61,9 @@
         }
 
         function proceedToCheckout() {
-            window.location.href = 'checkout.html';
+            const totalAmount = calculateTotal();  // 获取总金额
+            localStorage.setItem('totalAmount', totalAmount);  // 存储总金额到 localStorage
+            window.location.href = 'checkout.html';  // 跳转到 checkout 页面
         }
 
         // Render cart on page load
