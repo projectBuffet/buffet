@@ -36,8 +36,35 @@
 
     <div class="checkout-form">
         <form id="payment-form">
+            <!-- 用户输入姓名 -->
+            <label for="card-holder-name">Card Holder Name</label>
+            <input id="card-holder-name" type="text" placeholder="Card Holder Name" required>
+
+            <!-- 用户输入邮箱 -->
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="Email" required>
+
+            <!-- 用户输入地址信息 -->
+            <label for="address-line1">Address Line 1</label>
+            <input id="address-line1" type="text" placeholder="1234 Main St" required>
+
+            <label for="city">City</label>
+            <input id="city" type="text" placeholder="City" required>
+
+            <label for="state">State</label>
+            <input id="state" type="text" placeholder="State" required>
+
+            <label for="postal-code">Postal Code</label>
+            <input id="postal-code" type="text" placeholder="Postal Code" required>
+
+            <label for="country">Country</label>
+            <input id="country" type="text" value="US" placeholder="Country" required>
+
+            <!-- Stripe 卡片输入框 -->
             <div id="card-element"><!-- Stripe Card Element 将显示在此 --></div>
             <div id="card-errors" role="alert"></div>
+
+            <!-- 提交按钮 -->
             <button type="submit" id="submit">Pay</button>
         </form>
     </div>
@@ -47,8 +74,25 @@
         var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ');  // 使用你的 Stripe 公钥
         var elements = stripe.elements();
 
-        // 创建一个卡片输入框
-        var card = elements.create('card');
+        // 创建一个卡片输入框，启用邮政编码字段
+        var card = elements.create('card', {
+          hidePostalCode: false,  // 启用邮政编码字段
+          style: {
+            base: {
+              color: '#32325d',
+              fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+              fontSmoothing: 'antialiased',
+              fontSize: '16px',
+              '::placeholder': {
+                color: '#aab7c4'
+              }
+            },
+            invalid: {
+              color: '#fa755a',
+              iconColor: '#fa755a'
+            }
+          }
+        });
         card.mount('#card-element');
 
         // 处理支付表单的提交
@@ -59,6 +103,17 @@
             stripe.createPaymentMethod({
                 type: 'card',
                 card: card,
+                billing_details: {
+                  name: document.getElementById('card-holder-name').value, // 卡持有人姓名
+                  email: document.getElementById('email').value,  // 用户电子邮件
+                  address: {
+                    line1: document.getElementById('address-line1').value,  // 地址行1
+                    city: document.getElementById('city').value,  // 城市
+                    state: document.getElementById('state').value,  // 州/省
+                    postal_code: document.getElementById('postal-code').value,  // 邮政编码
+                    country: document.getElementById('country').value  // 国家
+                  }
+                }
             }).then(function(result) {
                 if (result.error) {
                     // 显示错误信息
