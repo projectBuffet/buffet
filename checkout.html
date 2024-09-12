@@ -71,12 +71,12 @@
 
     <script>
         // 初始化 Stripe
-        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ');  // 使用你的 Stripe 公钥
+        var stripe = Stripe('pk_live_你的公共密钥');  // 使用你的 Stripe 公钥
         var elements = stripe.elements();
 
         // 创建一个卡片输入框，启用邮政编码字段
         var card = elements.create('card', {
-          hidePostalCode: false,  // 启用邮政编码字段
+          hidePostalCode: false,
           style: {
             base: {
               color: '#32325d',
@@ -102,7 +102,7 @@
 
             // 获取购物车总金额
             const totalAmount = localStorage.getItem('totalAmount');
-            console.log('Total amount (in cents): ', totalAmount);  // 确认金额是否正确
+            console.log('Total amount (in cents): ', totalAmount);
 
             if (!totalAmount || isNaN(totalAmount)) {
                 alert('Amount is missing or invalid');
@@ -113,19 +113,18 @@
                 type: 'card',
                 card: card,
                 billing_details: {
-                  name: document.getElementById('card-holder-name').value,  // 卡持有人姓名
-                  email: document.getElementById('email').value,  // 用户电子邮件
+                  name: document.getElementById('card-holder-name').value,
+                  email: document.getElementById('email').value,
                   address: {
-                    line1: document.getElementById('address-line1').value,  // 地址行1
-                    city: document.getElementById('city').value,  // 城市
-                    state: document.getElementById('state').value,  // 州/省
-                    postal_code: document.getElementById('postal-code').value,  // 邮政编码
-                    country: document.getElementById('country').value  // 国家
+                    line1: document.getElementById('address-line1').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    postal_code: document.getElementById('postal-code').value,
+                    country: document.getElementById('country').value
                   }
                 }
             }).then(function(result) {
                 if (result.error) {
-                    // 显示错误信息
                     var errorElement = document.getElementById('card-errors');
                     errorElement.textContent = result.error.message;
                 } else {
@@ -137,18 +136,19 @@
                         },
                         body: JSON.stringify({
                             payment_method_id: result.paymentMethod.id,
-                            amount: totalAmount  // 使用存储的总金额
+                            amount: totalAmount
                         }),
                     }).then(function(response) {
                         return response.json();
                     }).then(function(session) {
-                        // 重定向到 Stripe Checkout 页面
-                        return stripe.redirectToCheckout({ sessionId: session.id });
-                    }).then(function(result) {
-                        if (result.error) {
-                            var errorElement = document.getElementById('card-errors');
-                            errorElement.textContent = result.error.message;
+                        // 在支付成功后跳转到成功页面
+                        if (session.success) {
+                            window.location.href = "https://yourwebsite.com/success";  // 成功页面的 URL
+                        } else {
+                            alert("Payment failed, please try again.");
                         }
+                    }).catch(function(error) {
+                        console.log('Error during payment:', error);
                     });
                 }
             });
