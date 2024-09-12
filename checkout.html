@@ -102,13 +102,18 @@
 
             // 获取购物车总金额
             const totalAmount = localStorage.getItem('totalAmount');
-            console.log('Total amount: ', totalAmount);
+            console.log('Total amount (in cents): ', totalAmount);  // 确认金额是否正确
+
+            if (!totalAmount || isNaN(totalAmount)) {
+                alert('Amount is missing or invalid');
+                return;
+            }
 
             stripe.createPaymentMethod({
                 type: 'card',
                 card: card,
                 billing_details: {
-                  name: document.getElementById('card-holder-name').value, // 卡持有人姓名
+                  name: document.getElementById('card-holder-name').value,  // 卡持有人姓名
                   email: document.getElementById('email').value,  // 用户电子邮件
                   address: {
                     line1: document.getElementById('address-line1').value,  // 地址行1
