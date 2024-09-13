@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project BUFFET</title>
+    <script src="my-header.js" defer></script>
     <style>
         /* 基本样式 */
         body {
@@ -13,152 +14,21 @@
             display: block;
             height: 200vh;
             background-color: #ffffff;
-        }
-
-        iframe{
-            border:0px;
-            margin:0px;
-            padding:0px;
-        }
-        h1 {
-            color: #000000;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 12px;
-            font-weight: 400;
-        }
-
-        /* 菜单样式 */
-        .menu {
-            position: absolute;
             display: flex;
-            justify-content: space-around;
-            list-style: none;
-            padding: 10px 10px;
-            margin-block-start: 0px;
-            margin-block-end: 0px;
-            height:22px;
+            flex-direction: column; /* 让菜单项从上到下排列 */
+            align-items: center;
         }
-
-        .menu-item {
-            display: inline-block;
-            align-content: center;
-            margin-right: 30px;
-        }
-
-        #menu-toggle {
-        display: none;
-    }
-
-        
-
-        /* 移动端样式 */
-        @media screen and (max-width: 1000px) {
-            .menu {
-        display: flex;
-        flex-direction: column; /* 让菜单项从上到下排列 */
-        align-items: center; /* 菜单项水平居中 */
-        justify-content: flex-start; /* 菜单项靠上对齐 */
-        opacity: 0;
-        pointer-events: none;
-        overflow: hidden;
-        background-color: #ffffff;
-        position: absolute;
-        top: 42px;
-        width: 100vw;
-        height: 100vh;
-        max-width: 600px;
-        transition: opacity 0.25s ease;
-        padding: 0px 0; /* 给菜单顶部和底部一点空间 */
-    }
-    .menu-item {
-        display: flex;
-        align-items: center; /* 垂直居中 */
-        width: 100%; /* 让菜单项占满父容器的宽度 */
-        border: 1px solid #000000;
-        height: 130px; /* 固定高度，确保居中效果 */
-        margin-bottom: -1px; /* 菜单项之间的间距 */
-        margin-left:0px;
-        margin-right:0;
-    }
-
-    .menu-item2{
-        display: flex;
-        align-items: center; /* 垂直居中 */
-        width: 100%; /* 让菜单项占满父容器的宽度 */
-        border: 0px solid #ddd;
-        height: 40px; /* 固定高度，确保居中效果 */
-        margin-bottom: -1px; /* 菜单项之间的间距 */
-        margin-left:0px;
-        margin-right:0;
-
-    }
-    #menu-toggle {
-        display: block;
-        cursor: pointer;
-        position: absolute;
-        top: 12.5px;
-        left: 12.5px;
-        height: 17px;
-        width: auto;
-    }
-
-    h2{
-        margin-left: 30px;
-    }
-}
-
-/* 在菜单展开时的样式 */
-.menu.show {/* 这里设置一个大于菜单内容实际高度的值 */
-    opacity: 1;
-    pointer-events: all;
-}
 
     </style>
 </head>
 <body>
-
-    <div style="position:fixed">
-        <!-- 汉堡按钮 -->
-        <img id="menu-toggle" src="icons/hamburger.png" alt="Menu">
-
-        <!-- 菜单项 -->
-        <ul class="menu">
-        <li class="menu-item"><h2>WEARS WEARS WEARS WEARS WEARS WEARS WEARS<br>WEARS WEARS WEARS WEARS WEARS WEARS WEARS<br>WEARS WEARS WEARS WEARS WEARS WEARS WEARS</h2></li>
-        <li class="menu-item"><h2>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br>HOME DECOR HOME DECOR HOME DECOR HOME DECOR<br> </h2></li>
-        <li class="menu-item"><h2>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br>SCULPTURES SCULPTURES SCULPTURES SCULPTURES<br></h2></li>
-        <li class="menu-item"><h2>ACCESSORIES ACCESSORIES ACCESSORIES<br>ACCESSORIES ACCESSORIES ACCESSORIES<br>ACCESSORIES ACCESSORIES ACCESSORIES</h2></li>
-        <li class="menu-item2"><h2></h2></li>
-        <li class="menu-item2"><h2>About</h2></li>
-        <li class="menu-item2"><h2>Contact</h2></li>
-        <li class="menu-item2"><h2>Tracking</h2></li>
-        </ul>
-
-        <!-- Logo -->
-        <div style="width:100vw; height:auto; display:flex; justify-content: center; padding-top: 9px;padding-bottom:11px; background-color: white;">
-            <img src="logo.png" style="width:130px;height:auto">
-        </div>
-
+    <my-header></my-header>
+    <div style="width:80%;height:auto; margin-top: 10px;">
+        <h1 style="font-weight: 900; font-size: 70px; text-align: center; -webkit-text-stroke: 2px;;">Be Careful About What You Are Feeding Yourself.</h1>
     </div>
 
-    <iframe src="wears.html" style="width:100%; height:100%; margin-top: 42px;"></iframe>
-
     <script>
-        // JavaScript 控制菜单展开和收起
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-    var menu = document.querySelector('.menu');
-    var toggleButton = document.getElementById('menu-toggle');
-    
-    if (menu.classList.contains('show')) {
-        menu.classList.remove('show');
-        toggleButton.src = 'icons/hamburger.png'; // 关闭菜单时切换回汉堡图标
-    } else {
-        menu.classList.add('show');
-        toggleButton.src = 'icons/close.png'; // 打开菜单时切换为关闭图标
-    }
-});
+       
     </script>
 </body>
 </html>

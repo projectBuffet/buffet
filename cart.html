@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Shopping Cart</title>
     <style>
+
         .cart-item {
             border-bottom: 1px solid #ddd;
             padding: 10px;
@@ -34,6 +35,8 @@
     <button onclick="proceedToCheckout()">Proceed to Checkout</button>
 
     <script>
+
+
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
         function renderCart() {

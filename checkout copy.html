@@ -28,6 +28,9 @@
             cursor: pointer;
             width: 100%;
         }
+        #payment-request-button {
+            margin-bottom: 20px;
+}
     </style>
     <script src="https://js.stripe.com/v3/"></script> <!-- 引入 Stripe JS -->
 </head>
@@ -73,57 +76,116 @@
 
     <script>
         // 初始化 Stripe
-        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ');  // 使用你的 Stripe 公钥
+        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ'); // 使用你的 Stripe 公钥
         var elements = stripe.elements();
-
+    
         // 创建一个卡片输入框，启用邮政编码字段
         var card = elements.create('card', {
-          hidePostalCode: false,
-          style: {
-            base: {
-              color: '#32325d',
-              fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-              fontSmoothing: 'antialiased',
-              fontSize: '16px',
-              '::placeholder': {
-                color: '#aab7c4'
-              }
-            },
-            invalid: {
-              color: '#fa755a',
-              iconColor: '#fa755a'
+            hidePostalCode: false,
+            style: {
+                base: {
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
             }
-          }
         });
         card.mount('#card-element');
-
+    
+        // Payment Request for Apple Pay and Google Pay
+        var paymentRequest = stripe.paymentRequest({
+            country: 'US',
+            currency: 'usd',
+            total: {
+                label: 'Total',
+                amount: parseInt(localStorage.getItem('totalAmount')) || 0, // 获取购物车总金额
+            },
+            requestPayerName: true,
+            requestPayerEmail: true,
+        });
+    
+        var prButton = elements.create('paymentRequestButton', {
+            paymentRequest: paymentRequest,
+        });
+    
+        // 检查设备是否支持 Apple Pay 或 Google Pay
+        paymentRequest.canMakePayment().then(function(result) {
+            if (result) {
+                prButton.mount('#payment-request-button');  // 挂载 Payment Request 按钮
+            } else {
+                document.getElementById('payment-request-button').style.display = 'none';
+            }
+        });
+    
+        // 处理 Payment Request 付款
+        paymentRequest.on('paymentmethod', function(ev) {
+            stripe.createPaymentMethod({
+                type: 'card',
+                card: ev.paymentMethod,
+                billing_details: ev.payer,
+            }).then(function(result) {
+                if (result.error) {
+                    ev.complete('fail');
+                } else {
+                    fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payment_method_id: result.paymentMethod.id,
+                            amount: localStorage.getItem('totalAmount')
+                        }),
+                    }).then(function(response) {
+                        return response.json();
+                    }).then(function(session) {
+                        if (session.success) {
+                            ev.complete('success');
+                            window.location.href = "https://projectbuffet.com/success.html";
+                        } else {
+                            ev.complete('fail');
+                            alert("Payment failed, please try again.");
+                        }
+                    });
+                }
+            });
+        });
+    
         // 处理支付表单的提交
         var form = document.getElementById('payment-form');
         form.addEventListener('submit', function(event) {
             event.preventDefault();
-
+    
             // 获取购物车总金额
             const totalAmount = localStorage.getItem('totalAmount');
             console.log('Total amount (in cents): ', totalAmount);
-
+    
             if (!totalAmount || isNaN(totalAmount)) {
                 alert('Amount is missing or invalid');
                 return;
             }
-
+    
             stripe.createPaymentMethod({
                 type: 'card',
                 card: card,
                 billing_details: {
-                  name: document.getElementById('card-holder-name').value,
-                  email: document.getElementById('email').value,
-                  address: {
-                    line1: document.getElementById('address-line1').value,
-                    city: document.getElementById('city').value,
-                    state: document.getElementById('state').value,
-                    postal_code: document.getElementById('postal-code').value,
-                    country: document.getElementById('country').value
-                  }
+                    name: document.getElementById('card-holder-name').value,
+                    email: document.getElementById('email').value,
+                    address: {
+                        line1: document.getElementById('address-line1').value,
+                        city: document.getElementById('city').value,
+                        state: document.getElementById('state').value,
+                        postal_code: document.getElementById('postal-code').value,
+                        country: document.getElementById('country').value
+                    }
                 }
             }).then(function(result) {
                 if (result.error) {
