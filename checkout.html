@@ -5,43 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
     <style>
+
+        body{
+            font-family: helvetica;
+            display: flex;
+        flex-direction: column; /* 让菜单项从上到下排列 */
+        align-items: center; /* 菜单项水平居中 */
+        justify-content: flex-start;
+        }
+
+        .background{
+            width:350px;
+            height:2000px;
+            background-color: rgb(255, 255, 255);
+            
+
+        }
+
+
         .checkout-form {
-            max-width: 400px;
+            max-width: 350px;
             margin: auto;
             padding: 20px;
+            padding-right: 40px;
             border: 1px solid #ddd;
+            
+        }
+
+        #payment-form{
+            width:100%;
+            
         }
         .checkout-form label {
             display: block;
             margin-bottom: 10px;
+            font-size:13px;
         }
         .checkout-form input {
             width: 100%;
             padding: 8px;
+            
             margin-bottom: 10px;
         }
         .checkout-form button {
-            background-color: blue;
+            background-color: rgb(0, 0, 0);
             color: white;
             padding: 10px;
             border: none;
             cursor: pointer;
             width: 100%;
         }
+
+        .checkout-form h1{
+            font-size:22px;
+            font-weight:900;
+            margin-bottom: 50px;
+            -webkit-text-stroke: 0.55px;
+        }
+        #payment-request-button {
+            margin-bottom: 20px;
+            margin-top:20px;
+        }
+
+        #card-element{
+            margin-top: 10px;
+            margin-bottom:20px;
+            
+
+        }
+
+        .cart{
+            width:350px;
+            height:auto;
+            background-color: rgb(255, 255, 255);
+            padding: 20px;
+            border-left: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            box-sizing: border-box
+        }
+
+        .cart h2{
+            font-size:18px;
+            margin-bottom: 10px;;
+
+        }
+
+        .amount{
+            margin-bottom: 5px;
+        }
+
+        #cart-items {
+    list-style: none; /* 去掉 bullet point */
+    padding: 0; /* 可选：移除内边距 */
+    margin: 0; /* 可选：移除外边距 */
+}
+
     </style>
     <script src="https://js.stripe.com/v3/"></script> <!-- 引入 Stripe JS -->
 </head>
 <body>
+    <div class="background">
+        
     <h1>Checkout</h1>
 
+        
+
+    <div class="cart">
+        <img src="logo.png" style="width:100px;height:auto;margin-bottom: 60px;">
+                
+        <ul id="cart-items"></ul> <!-- 用于显示商品名称和数量 -->
+        <h2 class="amount">$0.00</h2>
+    </div>
+
     <div class="checkout-form">
+        <h1>Shipping Address</h1>
+        <form id="shipping-form">
+            <label for="shipping-name">Full Name</label>
+            <input id="shipping-name" type="text" placeholder="Full Name" required>
+    
+            <label for="shipping-address-line1">Address Line 1</label>
+            <input id="shipping-address-line1" type="text" placeholder="1234 Main St" required>
+    
+            <label for="shipping-city">City</label>
+            <input id="shipping-city" type="text" placeholder="City" required>
+    
+            <label for="shipping-state">State</label>
+            <input id="shipping-state" type="text" placeholder="State" required>
+    
+            <label for="shipping-postal-code">Zip Code</label>
+            <input id="shipping-postal-code" type="text" placeholder="Postal Code" required>
+    
+            <label for="shipping-country">Country</label>
+            <input id="shipping-country" type="text" value="US" placeholder="Country" required>
+        </form>
+    </div>
+
+
+    <div class="checkout-form">
+        <h1>Billing</h1>
         <form id="payment-form">
+            
             <!-- 用户输入姓名 -->
-            <label for="card-holder-name">Card Holder Name</label>
+            <label for="card-holder-name">Full Name</label>
             <input id="card-holder-name" type="text" placeholder="Card Holder Name" required>
 
             <!-- 用户输入邮箱 -->
-            <label for="email">Email</label>
+            <label for="email">E-mail</label>
             <input id="email" type="email" placeholder="Email" required>
 
             <!-- 用户输入地址信息 -->
@@ -54,7 +164,7 @@
             <label for="state">State</label>
             <input id="state" type="text" placeholder="State" required>
 
-            <label for="postal-code">Postal Code</label>
+            <label for="postal-code">Zip Code</label>
             <input id="postal-code" type="text" placeholder="Postal Code" required>
 
             <label for="country">Country</label>
@@ -71,66 +181,93 @@
         <div id="payment-request-button"></div>
     </div>
 
-    <script>
-        // 初始化 Stripe
-        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ');  // 使用你的 Stripe 公钥
-        var elements = stripe.elements();
+</div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取 localStorage 中存储的购物车数据
+            const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // 找到 class 为 amount 的 h2 元素
+            const amountElement = document.querySelector('.amount');
+
+            // 计算购物车总金额
+            const totalAmount = cartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+            // 将金额插入到 h2 元素中，格式为美元
+            amountElement.textContent = `$${(totalAmount / 100).toFixed(2)}`;
+
+            // 获取显示购物车内容的元素
+            const cartItemsElement = document.getElementById('cart-items');
+
+            // 动态生成购物车内容
+            cartData.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${item.name} - x ${item.quantity}`;
+                cartItemsElement.appendChild(listItem);
+            });
+        });
+        ///////////////////////////////////以下是stripe付款js
+        // 初始化 Stripe
+        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ'); // 使用你的 Stripe 公钥
+        var elements = stripe.elements();
+    
         // 创建一个卡片输入框，启用邮政编码字段
         var card = elements.create('card', {
-          hidePostalCode: false,
-          style: {
-            base: {
-              color: '#32325d',
-              fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-              fontSmoothing: 'antialiased',
-              fontSize: '16px',
-              '::placeholder': {
-                color: '#aab7c4'
-              }
-            },
-            invalid: {
-              color: '#fa755a',
-              iconColor: '#fa755a'
+            hidePostalCode: false,
+            style: {
+                base: {
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
             }
-          }
         });
         card.mount('#card-element');
-
-        // 处理支付表单的提交
-        var form = document.getElementById('payment-form');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            // 获取购物车总金额
-            const totalAmount = localStorage.getItem('totalAmount');
-            console.log('Total amount (in cents): ', totalAmount);
-
-            if (!totalAmount || isNaN(totalAmount)) {
-                alert('Amount is missing or invalid');
-                return;
+    
+        // Payment Request for Apple Pay and Google Pay
+        var paymentRequest = stripe.paymentRequest({
+            country: 'US',
+            currency: 'usd',
+            total: {
+                label: 'Total',
+                amount: parseInt(localStorage.getItem('totalAmount')) || 0, // 获取购物车总金额
+            },
+            requestPayerName: true,
+            requestPayerEmail: true,
+        });
+    
+        var prButton = elements.create('paymentRequestButton', {
+            paymentRequest: paymentRequest,
+        });
+    
+        // 检查设备是否支持 Apple Pay 或 Google Pay
+        paymentRequest.canMakePayment().then(function(result) {
+            if (result) {
+                prButton.mount('#payment-request-button');  // 挂载 Payment Request 按钮
+            } else {
+                document.getElementById('payment-request-button').style.display = 'none';
             }
-
+        });
+    
+        // 处理 Payment Request 付款
+        paymentRequest.on('paymentmethod', function(ev) {
             stripe.createPaymentMethod({
                 type: 'card',
-                card: card,
-                billing_details: {
-                  name: document.getElementById('card-holder-name').value,
-                  email: document.getElementById('email').value,
-                  address: {
-                    line1: document.getElementById('address-line1').value,
-                    city: document.getElementById('city').value,
-                    state: document.getElementById('state').value,
-                    postal_code: document.getElementById('postal-code').value,
-                    country: document.getElementById('country').value
-                  }
-                }
+                card: ev.paymentMethod,
+                billing_details: ev.payer,
             }).then(function(result) {
                 if (result.error) {
-                    var errorElement = document.getElementById('card-errors');
-                    errorElement.textContent = result.error.message;
+                    ev.complete('fail');
                 } else {
-                    // 将付款信息发送到服务器端进行处理
                     fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
                         method: 'POST',
                         headers: {
@@ -138,23 +275,100 @@
                         },
                         body: JSON.stringify({
                             payment_method_id: result.paymentMethod.id,
-                            amount: totalAmount
+                            amount: localStorage.getItem('totalAmount')
                         }),
                     }).then(function(response) {
                         return response.json();
                     }).then(function(session) {
-                        // 在支付成功后跳转到成功页面
                         if (session.success) {
-                            window.location.href = "https://projectbuffet.com/success.html";  // 成功页面的 URL
+                            ev.complete('success');
+                            window.location.href = "https://projectbuffet.com/success.html";
                         } else {
+                            ev.complete('fail');
                             alert("Payment failed, please try again.");
                         }
-                    }).catch(function(error) {
-                        console.log('Error during payment:', error);
                     });
                 }
             });
         });
+    
+        // 处理支付表单的提交
+var form = document.getElementById('payment-form');
+form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    // 获取邮寄地址信息
+    const shippingName = document.getElementById('shipping-name').value;
+    const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
+    const shippingCity = document.getElementById('shipping-city').value;
+    const shippingState = document.getElementById('shipping-state').value;
+    const shippingPostalCode = document.getElementById('shipping-postal-code').value;
+    const shippingCountry = document.getElementById('shipping-country').value;
+
+    // 获取购物车总金额
+    const totalAmount = localStorage.getItem('totalAmount');
+    console.log('Total amount (in cents): ', totalAmount);
+
+    if (!totalAmount || isNaN(totalAmount)) {
+        alert('Amount is missing or invalid');
+        return;
+    }
+
+    // Stripe 支付请求
+    stripe.createPaymentMethod({
+        type: 'card',
+        card: card,
+        billing_details: {
+            name: document.getElementById('card-holder-name').value,
+            email: document.getElementById('email').value,
+            address: {
+                line1: document.getElementById('address-line1').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                postal_code: document.getElementById('postal-code').value,
+                country: document.getElementById('country').value
+            }
+        }
+    }).then(function(result) {
+        if (result.error) {
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+        } else {
+            // 将付款信息和邮寄信息一起发送到服务器端
+            fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    payment_method_id: result.paymentMethod.id,
+                    amount: totalAmount,
+                    shipping: {
+                        name: shippingName,
+                        address: {
+                            line1: shippingAddressLine1,
+                            city: shippingCity,
+                            state: shippingState,
+                            postal_code: shippingPostalCode,
+                            country: shippingCountry
+                        }
+                    }
+                }),
+            }).then(function(response) {
+                return response.json();
+            }).then(function(session) {
+                // 支付成功后的处理
+                if (session.success) {
+                    window.location.href = "https://projectbuffet.com/success.html";  // 成功页面的 URL
+                } else {
+                    alert("Payment failed, please try again.");
+                }
+            }).catch(function(error) {
+                console.log('Error during payment:', error);
+            });
+        }
+    });
+});
     </script>
 </body>
 </html>
