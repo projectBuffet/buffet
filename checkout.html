@@ -115,6 +115,12 @@ textarea {
     height: 100px; /* 设置和其他 input 高度一致 */
 }
 
+/* 禁用输入框的灰色样式 */
+input.disabled, textarea.disabled {
+    background-color: #e0e0e0;
+    color: #888;
+    pointer-events: none; /* 禁止输入 */
+}
     </style>
     <script src="https://js.stripe.com/v3/"></script> <!-- 引入 Stripe JS -->
 </head>
@@ -161,6 +167,12 @@ textarea {
 
         <label for="shipping-message">Message</label>
         <textarea id="shipping-message" placeholder="Enter any additional message here"></textarea>
+        
+        <!-- 复选框：是否地址相同 -->
+        <label>
+            <input type="checkbox" id="same-address"> Shipping address is the same as billing address
+        </label>
+        <p id="error-message" style="color: red; display: none;">Please finish the shipping address first</p>
     </form>
     </div>
 
@@ -197,6 +209,9 @@ textarea {
             <div id="card-element"><!-- Stripe Card Element 将显示在此 --></div>
             <div id="card-errors" role="alert"></div>
 
+            <!-- 提交按钮错误提示 -->
+            <p id="pay-error-message" style="color: red; display: none;"></p>
+
             <!-- 提交按钮 -->
             <button type="submit" id="submit">Pay</button>
         </form>
@@ -207,203 +222,302 @@ textarea {
 </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取 localStorage 中存储的购物车数据
-            const cartData = JSON.parse(localStorage.getItem('cart')) || [];
 
-            // 找到 class 为 amount 的 h2 元素
-            const amountElement = document.querySelector('.amount');
+const submitButton = document.getElementById('submit');
+    const payErrorMessage = document.getElementById('pay-error-message');
 
-            // 计算购物车总金额
-            const totalAmount = cartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // 检查所有输入框是否填写完整
+    function checkFormValidity() {
+        // 动态获取所有必填的输入框
+        const requiredFields = document.querySelectorAll('#payment-form input[required], #shipping-form input[required]');
+        let allFieldsFilled = true;
 
-            // 将金额插入到 h2 元素中，格式为美元
-            amountElement.textContent = `$${(totalAmount / 100).toFixed(2)}`;
-
-            // 获取显示购物车内容的元素
-            const cartItemsElement = document.getElementById('cart-items');
-
-            // 动态生成购物车内容
-            cartData.forEach(item => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${item.name} - x ${item.quantity}`;
-                cartItemsElement.appendChild(listItem);
-            });
-        });
-        ///////////////////////////////////以下是stripe付款js
-        // 初始化 Stripe
-        var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ'); // 使用你的 Stripe 公钥
-        var elements = stripe.elements();
-    
-        // 创建一个卡片输入框，启用邮政编码字段
-        var card = elements.create('card', {
-            hidePostalCode: false,
-            style: {
-                base: {
-                    color: '#32325d',
-                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                    fontSmoothing: 'antialiased',
-                    fontSize: '16px',
-                    '::placeholder': {
-                        color: '#aab7c4'
-                    }
-                },
-                invalid: {
-                    color: '#fa755a',
-                    iconColor: '#fa755a'
+        // 遍历所有必填输入框，检查是否有空值
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) { // 确保去除空格后检查是否为空
+                allFieldsFilled = false;
+                // 仅在用户开始输入时标记为空的输入框为红色
+                if (field === document.activeElement) {
+                    field.style.borderColor = 'red';  // 如果未填，标记为红色
                 }
-            }
-        });
-        card.mount('#card-element');
-    
-        // Payment Request for Apple Pay and Google Pay
-        var paymentRequest = stripe.paymentRequest({
-            country: 'US',
-            currency: 'usd',
-            total: {
-                label: 'Total',
-                amount: parseInt(localStorage.getItem('totalAmount')) || 0, // 获取购物车总金额
-            },
-            requestPayerName: true,
-            requestPayerEmail: true,
-        });
-    
-        var prButton = elements.create('paymentRequestButton', {
-            paymentRequest: paymentRequest,
-        });
-    
-        // 检查设备是否支持 Apple Pay 或 Google Pay
-        paymentRequest.canMakePayment().then(function(result) {
-            if (result) {
-                prButton.mount('#payment-request-button');  // 挂载 Payment Request 按钮
             } else {
-                document.getElementById('payment-request-button').style.display = 'none';
+                field.style.borderColor = '';  // 如果填写了，移除红色边框
             }
         });
-    
-        // 处理 Payment Request 付款
-        paymentRequest.on('paymentmethod', function(ev) {
-            stripe.createPaymentMethod({
-                type: 'card',
-                card: ev.paymentMethod,
-                billing_details: ev.payer,
-            }).then(function(result) {
-                if (result.error) {
-                    ev.complete('fail');
-                } else {
-                    fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            payment_method_id: result.paymentMethod.id,
-                            amount: localStorage.getItem('totalAmount')
-                        }),
-                    }).then(function(response) {
-                        return response.json();
-                    }).then(function(session) {
-                        if (session.success) {
-                            ev.complete('success');
-                            window.location.href = "https://projectbuffet.com/success.html";
-                        } else {
-                            ev.complete('fail');
-                            alert("Payment failed, please try again.");
-                        }
-                    });
-                }
-            });
-        });
-    
-        // 处理支付表单的提交
-        var form = document.getElementById('payment-form');
-form.addEventListener('submit', function(event) {
-    event.preventDefault();
 
-    // 获取邮寄地址信息
-    const shippingName = document.getElementById('shipping-name').value;
-    const shippingEmail = document.getElementById('shipping-email').value;
-    const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
-    const shippingAddressLine2 = document.getElementById('shipping-address-line2').value; // 第二行地址
-    const shippingCity = document.getElementById('shipping-city').value;
-    const shippingState = document.getElementById('shipping-state').value;
-    const shippingPostalCode = document.getElementById('shipping-postal-code').value;
-    const shippingCountry = document.getElementById('shipping-country').value;
-    const shippingMessage = document.getElementById('shipping-message').value; // 获取Message内容
-
-    // 获取购物车数据
-    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
-    const productNames = cartData.map(item => item.name).join(', ');
-    const productQuantities = cartData.map(item => `${item.name}: ${item.quantity}`).join(', ');
-
-    // 获取购物车总金额
-    const totalAmount = localStorage.getItem('totalAmount');
-    if (!totalAmount || isNaN(totalAmount)) {
-        alert('Amount is missing or invalid');
-        return;
+        // 如果所有字段都填写了，启用按钮并隐藏错误消息；否则禁用按钮并显示错误消息
+        if (allFieldsFilled) {
+            submitButton.disabled = false;
+            payErrorMessage.style.display = 'none';
+        } else {
+            submitButton.disabled = true;
+            payErrorMessage.style.display = 'block';
+        }
     }
 
-    // Stripe 支付请求
-    stripe.createPaymentMethod({
-        type: 'card',
-        card: card,
-        billing_details: {
-            name: document.getElementById('card-holder-name').value,
-            email: document.getElementById('email').value,
-            address: {
-                line1: document.getElementById('address-line1').value,
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                postal_code: document.getElementById('postal-code').value,
-                country: document.getElementById('country').value
+    // 监听每个输入框的输入事件
+    document.addEventListener('input', checkFormValidity);
+
+    // 初始化时不检查输入框的状态，等用户输入后再检查
+
+    //////////////////////// 勾选是否shipping和billing地址一样 ///////////////////////////////
+    document.getElementById('same-address').addEventListener('change', function() {
+        const shippingName = document.getElementById('shipping-name');
+        const shippingAddressLine1 = document.getElementById('shipping-address-line1');
+        const shippingAddressLine2 = document.getElementById('shipping-address-line2');
+        const shippingCity = document.getElementById('shipping-city');
+        const shippingState = document.getElementById('shipping-state');
+        const shippingPostalCode = document.getElementById('shipping-postal-code');
+        const shippingCountry = document.getElementById('shipping-country');
+        const errorMessage = document.getElementById('error-message');
+
+        const billingName = document.getElementById('card-holder-name');
+        const billingAddressLine1 = document.getElementById('address-line1');
+        const billingCity = document.getElementById('city');
+        const billingState = document.getElementById('state');
+        const billingPostalCode = document.getElementById('postal-code');
+        const billingCountry = document.getElementById('country');
+
+        // 检查 Shipping 地址是否填写完整
+        if (this.checked) {
+            if (shippingName.value && shippingAddressLine1.value && shippingCity.value && shippingState.value && shippingPostalCode.value && shippingCountry.value) {
+                // 隐藏错误消息
+                errorMessage.style.display = 'none';
+
+                // 复制 Shipping 地址到 Billing 并禁用 Billing 输入框
+                billingName.value = shippingName.value;
+                billingAddressLine1.value = shippingAddressLine1.value;
+                billingCity.value = shippingCity.value;
+                billingState.value = shippingState.value;
+                billingPostalCode.value = shippingPostalCode.value;
+                billingCountry.value = shippingCountry.value;
+
+                // 禁用 Billing 输入框并应用灰色样式
+                [billingName, billingAddressLine1, billingCity, billingState, billingPostalCode, billingCountry].forEach(function(input) {
+                    input.classList.add('disabled');
+                    input.setAttribute('disabled', 'disabled');
+                });
+            } else {
+                // 显示错误消息
+                errorMessage.style.display = 'block';
+                this.checked = false; // 取消勾选
             }
-        }
-    }).then(function(result) {
-        if (result.error) {
-            var errorElement = document.getElementById('card-errors');
-            errorElement.textContent = result.error.message;
         } else {
-            // 将付款信息、邮寄信息和商品信息一起发送到服务器端
-            fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    payment_method_id: result.paymentMethod.id,
-                    amount: totalAmount,
-                    shipping: {
-                        name: shippingName,
-                        address: {
-                            line1: shippingAddressLine1,
-                            line2: shippingAddressLine2, // 添加第二行地址
-                            city: shippingCity,
-                            state: shippingState,
-                            postal_code: shippingPostalCode,
-                            country: shippingCountry
-                        }
-                    },
-                    metadata: {
-                        product_names: productNames,
-                        product_quantities: productQuantities,
-                        shipping_email: shippingEmail,
-                        shipping_message: shippingMessage  // 传递Message内容
-                    }
-                }),
-            }).then(function(response) {
-                return response.json();
-            }).then(function(session) {
-                if (session.success) {
-                    window.location.href = "https://projectbuffet.com/success.html";  // 成功页面的 URL
-                } else {
-                    alert("Payment failed, please try again.");
-                }
-            }).catch(function(error) {
-                console.log('Error during payment:', error);
+            // 取消勾选后，清空 Billing 地址并恢复可编辑状态
+            billingName.value = '';
+            billingAddressLine1.value = '';
+            billingCity.value = '';
+            billingState.value = '';
+            billingPostalCode.value = '';
+            billingCountry.value = 'US'; // 恢复为默认值
+
+            // 恢复 Billing 输入框的可编辑状态
+            [billingName, billingAddressLine1, billingCity, billingState, billingPostalCode, billingCountry].forEach(function(input) {
+                input.classList.remove('disabled');
+                input.removeAttribute('disabled');
             });
         }
     });
-});
-    </script>
+
+    //////////////////////购物车内容提取显示//////////////////////////////////////////////////
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取 localStorage 中存储的购物车数据
+        const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // 找到 class 为 amount 的 h2 元素
+        const amountElement = document.querySelector('.amount');
+
+        // 计算购物车总金额
+        const totalAmount = cartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        // 将金额插入到 h2 元素中，格式为美元
+        amountElement.textContent = `$${(totalAmount / 100).toFixed(2)}`;
+
+        // 获取显示购物车内容的元素
+        const cartItemsElement = document.getElementById('cart-items');
+
+        // 动态生成购物车内容
+        cartData.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${item.name} - x ${item.quantity}`;
+            cartItemsElement.appendChild(listItem);
+        });
+    });
+
+    ///////////////////////////////////以下是stripe付款js/////////////////////////////////////////////
+    // 初始化 Stripe
+    var stripe = Stripe('pk_live_51OkiooEBkVsS3PIAnjgQDhhXbbDg2maVGmN0Z7hhTuY9zcNO1C1ZbS5UR1A9DT4N4w8m9IpEJHOQBaROYtwVgTJb000JaRy9fZ'); // 使用你的 Stripe 公钥
+    var elements = stripe.elements();
+
+    // 创建一个卡片输入框，启用邮政编码字段
+    var card = elements.create('card', {
+        hidePostalCode: false,
+        style: {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        }
+    });
+    card.mount('#card-element');
+
+    // Payment Request for Apple Pay and Google Pay
+    var paymentRequest = stripe.paymentRequest({
+        country: 'US',
+        currency: 'usd',
+        total: {
+            label: 'Total',
+            amount: parseInt(localStorage.getItem('totalAmount')) || 0, // 获取购物车总金额
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+    });
+
+    var prButton = elements.create('paymentRequestButton', {
+        paymentRequest: paymentRequest,
+    });
+
+    // 检查设备是否支持 Apple Pay 或 Google Pay
+    paymentRequest.canMakePayment().then(function(result) {
+        if (result) {
+            prButton.mount('#payment-request-button');  // 挂载 Payment Request 按钮
+        } else {
+            document.getElementById('payment-request-button').style.display = 'none';
+        }
+    });
+
+    // 处理 Payment Request 付款
+    paymentRequest.on('paymentmethod', function(ev) {
+        stripe.createPaymentMethod({
+            type: 'card',
+            card: ev.paymentMethod,
+            billing_details: ev.payer,
+        }).then(function(result) {
+            if (result.error) {
+                ev.complete('fail');
+            } else {
+                fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payment_method_id: result.paymentMethod.id,
+                        amount: localStorage.getItem('totalAmount')
+                    }),
+                }).then(function(response) {
+                    return response.json();
+                }).then(function(session) {
+                    if (session.success) {
+                        ev.complete('success');
+                        window.location.href = "https://projectbuffet.com/success.html";
+                    } else {
+                        ev.complete('fail');
+                        alert("Payment failed, please try again.");
+                    }
+                });
+            }
+        });
+    });
+
+    // 处理支付表单的提交
+    var form = document.getElementById('payment-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        // 获取邮寄地址信息
+        const shippingName = document.getElementById('shipping-name').value;
+        const shippingEmail = document.getElementById('shipping-email').value;
+        const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
+        const shippingAddressLine2 = document.getElementById('shipping-address-line2').value; // 第二行地址
+        const shippingCity = document.getElementById('shipping-city').value;
+        const shippingState = document.getElementById('shipping-state').value;
+        const shippingPostalCode = document.getElementById('shipping-postal-code').value;
+        const shippingCountry = document.getElementById('shipping-country').value;
+        const shippingMessage = document.getElementById('shipping-message').value; // 获取Message内容
+
+        // 获取购物车数据
+        const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+        const productNames = cartData.map(item => item.name).join(', ');
+        const productQuantities = cartData.map(item => `${item.name}: ${item.quantity}`).join(', ');
+
+        // 获取购物车总金额
+        const totalAmount = localStorage.getItem('totalAmount');
+        if (!totalAmount || isNaN(totalAmount)) {
+            alert('Amount is missing or invalid');
+            return;
+        }
+
+        // Stripe 支付请求
+        stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+            billing_details: {
+                name: document.getElementById('card-holder-name').value,
+                email: document.getElementById('email').value,
+                address: {
+                    line1: document.getElementById('address-line1').value,
+                    city: document.getElementById('city').value,
+                    state: document.getElementById('state').value,
+                    postal_code: document.getElementById('postal-code').value,
+                    country: document.getElementById('country').value
+                }
+            }
+        }).then(function(result) {
+            if (result.error) {
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+            } else {
+                // 将付款信息、邮寄信息和商品信息一起发送到服务器端
+                fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payment_method_id: result.paymentMethod.id,
+                        amount: totalAmount,
+                        shipping: {
+                            name: shippingName,
+                            address: {
+                                line1: shippingAddressLine1,
+                                line2: shippingAddressLine2, // 添加第二行地址
+                                city: shippingCity,
+                                state: shippingState,
+                                postal_code: shippingPostalCode,
+                                country: shippingCountry
+                            }
+                        },
+                        metadata: {
+                            product_names: productNames,
+                            product_quantities: productQuantities,
+                            shipping_email: shippingEmail,
+                            shipping_message: shippingMessage  // 传递Message内容
+                        }
+                    }),
+                }).then(function(response) {
+                    return response.json();
+                }).then(function(session) {
+                    if (session.success) {
+                        window.location.href = "https://projectbuffet.com/success.html";  // 成功页面的 URL
+                    } else {
+                        alert("Payment failed, please try again.");
+                    }
+                }).catch(function(error) {
+                    console.log('Error during payment:', error);
+                });
+            }
+        });
+    });
+</script>
 </body>
 </html>
