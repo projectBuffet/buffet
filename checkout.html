@@ -293,17 +293,25 @@
         });
     
         // 处理支付表单的提交
-var form = document.getElementById('payment-form');
+        var form = document.getElementById('payment-form');
 form.addEventListener('submit', function(event) {
     event.preventDefault();
 
     // 获取邮寄地址信息
     const shippingName = document.getElementById('shipping-name').value;
+    const shippingEmail = document.getElementById('shipping-email').value; // 获取新增的邮箱
     const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
     const shippingCity = document.getElementById('shipping-city').value;
     const shippingState = document.getElementById('shipping-state').value;
     const shippingPostalCode = document.getElementById('shipping-postal-code').value;
     const shippingCountry = document.getElementById('shipping-country').value;
+
+    // 获取购物车数据
+    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // 构建物品名称和数量
+    const productNames = cartData.map(item => item.name).join(', ');
+    const productQuantities = cartData.map(item => `${item.name}: ${item.quantity}`).join(', ');
 
     // 获取购物车总金额
     const totalAmount = localStorage.getItem('totalAmount');
@@ -334,7 +342,7 @@ form.addEventListener('submit', function(event) {
             var errorElement = document.getElementById('card-errors');
             errorElement.textContent = result.error.message;
         } else {
-            // 将付款信息和邮寄信息一起发送到服务器端
+            // 将付款信息、邮寄信息和商品信息一起发送到服务器端
             fetch('https://us-central1-capable-code-279907.cloudfunctions.net/create-checkout-session', {
                 method: 'POST',
                 headers: {
@@ -352,6 +360,11 @@ form.addEventListener('submit', function(event) {
                             postal_code: shippingPostalCode,
                             country: shippingCountry
                         }
+                    },
+                    metadata: {
+                        product_names: productNames,  // 商品名称
+                        product_quantities: productQuantities,  // 商品数量
+                        shipping_email: shippingEmail  // 邮寄的邮箱
                     }
                 }),
             }).then(function(response) {
