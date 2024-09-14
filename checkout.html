@@ -101,6 +101,20 @@
     margin: 0; /* 可选：移除外边距 */
 }
 
+textarea, input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    box-sizing: border-box; /* 确保 padding 不会影响宽度 */
+}
+
+textarea {
+    resize: none; /* 禁止用户调整 textarea 的大小 */
+    height: 100px; /* 设置和其他 input 高度一致 */
+}
+
     </style>
     <script src="https://js.stripe.com/v3/"></script> <!-- 引入 Stripe JS -->
 </head>
@@ -145,8 +159,8 @@
         <label for="shipping-country">Country</label>
         <input id="shipping-country" type="text" value="US" placeholder="Country" required>
 
-        <label for="shipping-message">Message</label> <!-- Message 输入框 -->
-        <textarea id="shipping-message" placeholder="Enter any additional message here" rows="3"></textarea>
+        <label for="shipping-message">Message</label>
+        <textarea id="shipping-message" placeholder="Enter any additional message here"></textarea>
     </form>
     </div>
 
