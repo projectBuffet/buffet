@@ -174,8 +174,8 @@ input.disabled, textarea.disabled {
         <label for="shipping-name">Full Name</label>
         <input id="shipping-name" type="text" placeholder="Full Name" required>
 
-        <label for="shipping-email">Email</label> <!-- 邮箱输入框 -->
-        <input id="shipping-email" type="email" placeholder="Email" required>
+        <label for="shipping-email">Number</label> <!-- 邮箱输入框 -->
+        <input id="shipping-number" type="text" placeholder="123-456-7890" required>
 
         <label for="shipping-address-line1">Address Line 1</label>
         <input id="shipping-address-line1" type="text" placeholder="1234 Main St" required>
@@ -243,7 +243,7 @@ input.disabled, textarea.disabled {
             <p id="pay-error-message" style="color: red; display: none;font-size: 12px;">Please fill all the fields.</p>
 
             <!-- 提交按钮 -->
-            <button type="submit" id="submit">Pay</button>
+            <button type="submit" id="submit">Pay by Card</button>
             <div id="payment-request-button"></div>
         </form>
 
@@ -489,7 +489,8 @@ submitButton.addEventListener('click', function(event) {
 
         // 获取邮寄地址信息
         const shippingName = document.getElementById('shipping-name').value;
-        const shippingEmail = document.getElementById('shipping-email').value;
+        const shippingNumber = document.getElementById('shipping-number').value;
+        const shippingEmail = document.getElementById('email').value;
         const shippingAddressLine1 = document.getElementById('shipping-address-line1').value;
         const shippingAddressLine2 = document.getElementById('shipping-address-line2').value; // 第二行地址
         const shippingCity = document.getElementById('shipping-city').value;
@@ -551,9 +552,10 @@ submitButton.addEventListener('click', function(event) {
                             }
                         },
                         metadata: {
+                            shipping_email: shippingEmail,
                             product_names: productNames,
                             product_quantities: productQuantities,
-                            shipping_email: shippingEmail,
+                            shipping_number: shippingNumber,
                             shipping_message: shippingMessage  // 传递Message内容
                         }
                     }),
