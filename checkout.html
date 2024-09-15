@@ -70,7 +70,9 @@ textarea:-webkit-autofill:focus {
             border: none;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 50px;
+            height: 40px;
+            font-size: 20px;;
+
         }
 
         .checkout-form h1, .cart h1{
@@ -147,7 +149,7 @@ input.disabled, textarea.disabled {
 
         <div class="cart" style="height:300px;">
             <img src="logo.png" style="width:100px;height:auto;margin-bottom: 60px;">
-            <img src="icons/plate.png" style="width:95%;height:auto;">
+            <img src="icons/plate.png" style="width:99%;height:auto;">
 
         </div>
         
@@ -239,9 +241,10 @@ input.disabled, textarea.disabled {
 
             <!-- 提交按钮 -->
             <button type="submit" id="submit">Pay</button>
+            <div id="payment-request-button"></div>
         </form>
 
-        <div id="payment-request-button"></div>
+        
     </div>
 
 
